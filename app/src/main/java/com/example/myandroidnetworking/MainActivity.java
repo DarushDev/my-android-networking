@@ -1,5 +1,8 @@
 package com.example.myandroidnetworking;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -48,5 +51,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private boolean isNetworkConnected() {
+        ConnectivityManager connMgr = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE); // 1
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo(); // 2
+        return networkInfo != null && networkInfo.isConnected(); // 3
     }
 }
