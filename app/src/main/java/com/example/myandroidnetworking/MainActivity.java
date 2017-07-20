@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
 
-            if (isNetworkConnected()) {
+            if (isWifiConnected()) {
                 mProgressDialog = new ProgressDialog(this);
                 mProgressDialog.setMessage("Please wait...");
                 mProgressDialog.setCancelable(false);
@@ -81,12 +81,19 @@ public class MainActivity extends AppCompatActivity {
         return networkInfo != null && networkInfo.isConnected(); // 3
     }
 
+    private boolean isWifiConnected() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        return networkInfo != null && (ConnectivityManager.TYPE_WIFI == networkInfo.getType()) && networkInfo.isConnected();
+    }
+
     private void showListFragment(ArrayList<Repository> repositories) {
         mListFragment = ListFragment.newInstance(repositories);
         getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, mListFragment).commit();
     }
 
     private void startDownload() {
+        new DownloadRepoTask().execute("https://api.github.com/users/darushdev/repos");
     }
 
 }
