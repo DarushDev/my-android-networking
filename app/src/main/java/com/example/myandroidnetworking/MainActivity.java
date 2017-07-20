@@ -12,6 +12,12 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+
 import org.json.JSONException;
 
 import java.io.IOException;
@@ -23,7 +29,7 @@ import okhttp3.Response;
 
 import static android.R.string.ok;
 
-public class MainActivity extends AppCompatActivity implements DownloadCompleteListener{
+public class MainActivity extends AppCompatActivity implements DownloadCompleteListener {
 
     ListFragment mListFragment;
     ProgressDialog mProgressDialog;
@@ -49,14 +55,14 @@ public class MainActivity extends AppCompatActivity implements DownloadCompleteL
                 startDownload();
             } else {
                 new AlertDialog.Builder(this)
-                .setTitle("No Internet Connection")
-                .setMessage("Looks like your internet connection is off. Please turn it on and try again!")
-                .setPositiveButton(ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
+                        .setTitle("No Internet Connection")
+                        .setMessage("Looks like your internet connection is off. Please turn it on and try again!")
+                        .setPositiveButton(ok, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
 
-                    }
-                }).setIcon(android.R.drawable.ic_dialog_alert).show();
+                            }
+                        }).setIcon(android.R.drawable.ic_dialog_alert).show();
             }
 
         }
@@ -108,8 +114,10 @@ public class MainActivity extends AppCompatActivity implements DownloadCompleteL
         //new DownloadRepoTask(this).execute("https://api.github.com/users/darushdev/repos");
 
         // Download using OkHttp library
-        requestUsingOkHttp("https://api.github.com/users/darushdev/repos");
+        //requestUsingOkHttp("https://api.github.com/users/darushdev/repos");
 
+        // Download using Volley library
+        requestUsingVolley("https://api.github.com/users/darushdev/repos");
 
     }
 
@@ -121,11 +129,11 @@ public class MainActivity extends AppCompatActivity implements DownloadCompleteL
         }
     }
 
-    private void requestUsingOkHttp(String url){
-        OkHttpClient client = new OkHttpClient();
-        okhttp3.Request request = new okhttp3.Request.Builder().url(url).build();
+    private void requestUsingOkHttp(String url) {
+        OkHttpClient client = new OkHttpClient(); //STEP 1
+        okhttp3.Request request = new okhttp3.Request.Builder().url(url).build(); //STEP 2
 
-        client.newCall(request).enqueue(new okhttp3.Callback(){
+        client.newCall(request).enqueue(new okhttp3.Callback() { //STEP 3
 
             @Override
             public void onFailure(Call call, IOException e) {
@@ -134,13 +142,13 @@ public class MainActivity extends AppCompatActivity implements DownloadCompleteL
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-                final String result = response.body().string();
+                final String result = response.body().string(); //STEP 4
 
                 MainActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            downloadComplete(Util.retrieveRepositoriesFromResponse(result));
+                            downloadComplete(Util.retrieveRepositoriesFromResponse(result)); //STEP 5
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -149,4 +157,33 @@ public class MainActivity extends AppCompatActivity implements DownloadCompleteL
             }
         });
     }
+
+    private void requestUsingVolley(String url) {
+
+        RequestQueue queue = Volley.newRequestQueue(this); //STEP 1
+
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                new com.android.volley.Response.Listener<String>() { //STEP 2
+
+                    @Override
+                    public void onResponse(String response) {
+                        try {
+                            downloadComplete(Util.retrieveRepositoriesFromResponse(response)); // STEP 3
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                }, new com.android.volley.Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+            }
+        });
+
+        queue.add(stringRequest); // STEP 4
+
+    }
+
 }
