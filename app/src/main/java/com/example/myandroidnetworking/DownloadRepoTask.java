@@ -2,6 +2,8 @@ package com.example.myandroidnetworking;
 
 import android.os.AsyncTask;
 
+import org.json.JSONException;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,11 +11,13 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-/**
- * Created by Lenovo Desktop on 7/20/2017.
- */
-
 public class DownloadRepoTask extends AsyncTask<String, Void, String> {
+
+    private DownloadCompleteListener mDownloadCompleteListener;
+
+    public DownloadRepoTask(DownloadCompleteListener mDownloadCompleteListener) {
+        this.mDownloadCompleteListener = mDownloadCompleteListener;
+    }
 
     @Override
     protected String doInBackground(String... params) {
@@ -29,6 +33,13 @@ public class DownloadRepoTask extends AsyncTask<String, Void, String> {
 
     @Override
     protected void onPostExecute(String result) {
+
+        try {
+            mDownloadCompleteListener.downloadComplete(Util.retrieveRepositoriesFromResponse(result));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
         super.onPostExecute(result);
     }
 

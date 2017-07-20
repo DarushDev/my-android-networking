@@ -14,7 +14,7 @@ import android.view.MenuItem;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements DownloadCompleteListener{
 
     ListFragment mListFragment;
     ProgressDialog mProgressDialog;
@@ -93,7 +93,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startDownload() {
-        new DownloadRepoTask().execute("https://api.github.com/users/darushdev/repos");
+        //use https://api.github.com/repositories for Github repositories URL
+        new DownloadRepoTask(this).execute("https://api.github.com/users/darushdev/repos");
     }
 
+    @Override
+    public void downloadComplete(ArrayList<Repository> repositories) {
+        showListFragment(repositories);
+        if (mProgressDialog != null) {
+            mProgressDialog.hide();
+        }
+    }
 }
