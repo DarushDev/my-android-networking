@@ -11,6 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -21,11 +22,15 @@ import com.android.volley.toolbox.Volley;
 import org.json.JSONException;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Response;
+import retrofit2.Callback;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 import static android.R.string.ok;
 
@@ -117,7 +122,10 @@ public class MainActivity extends AppCompatActivity implements DownloadCompleteL
         //requestUsingOkHttp("https://api.github.com/users/darushdev/repos");
 
         // Download using Volley library
-        requestUsingVolley("https://api.github.com/users/darushdev/repos");
+        //requestUsingVolley("https://api.github.com/users/darushdev/repos");
+
+        // Download using Retrofit library
+        requestUsingRetrofit();
 
     }
 
@@ -183,6 +191,30 @@ public class MainActivity extends AppCompatActivity implements DownloadCompleteL
         });
 
         queue.add(stringRequest); // STEP 4
+
+    }
+
+    private void requestUsingRetrofit() {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://api.github.com") //Step 1
+                .addConverterFactory(GsonConverterFactory.create()) // Step 2
+                .build();
+
+        RetrofitAPI retrofitAPI = retrofit.create(RetrofitAPI.class); // Step 3
+
+        retrofit2.Call<ArrayList<Repository>> call = retrofitAPI.retrieveRepositories(); // Step 4
+
+        call.enqueue(new Callback<ArrayList<Repository>>() {
+            @Override
+            public void onResponse(retrofit2.Call<ArrayList<Repository>> call, retrofit2.Response<ArrayList<Repository>> response) {
+                downloadComplete(response.body());
+            }
+
+            @Override
+            public void onFailure(retrofit2.Call<ArrayList<Repository>> call, Throwable t) {
+                Toast.makeText(MainActivity.this, t.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
 
     }
 
