@@ -12,7 +12,16 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import org.json.JSONException;
+
+import java.io.IOException;
 import java.util.ArrayList;
+
+import okhttp3.Call;
+import okhttp3.OkHttpClient;
+import okhttp3.Response;
+
+import static android.R.string.ok;
 
 public class MainActivity extends AppCompatActivity implements DownloadCompleteListener{
 
@@ -42,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements DownloadCompleteL
                 new AlertDialog.Builder(this)
                 .setTitle("No Internet Connection")
                 .setMessage("Looks like your internet connection is off. Please turn it on and try again!")
-                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                .setPositiveButton(ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
 
@@ -94,7 +103,14 @@ public class MainActivity extends AppCompatActivity implements DownloadCompleteL
 
     private void startDownload() {
         //use https://api.github.com/repositories for Github repositories URL
-        new DownloadRepoTask(this).execute("https://api.github.com/users/darushdev/repos");
+
+        // Download without using external libraries
+        //new DownloadRepoTask(this).execute("https://api.github.com/users/darushdev/repos");
+
+        // Download using OkHttp library
+        requestUsingOkHttp("https://api.github.com/users/darushdev/repos");
+
+
     }
 
     @Override
@@ -103,5 +119,34 @@ public class MainActivity extends AppCompatActivity implements DownloadCompleteL
         if (mProgressDialog != null) {
             mProgressDialog.hide();
         }
+    }
+
+    private void requestUsingOkHttp(String url){
+        OkHttpClient client = new OkHttpClient();
+        okhttp3.Request request = new okhttp3.Request.Builder().url(url).build();
+
+        client.newCall(request).enqueue(new okhttp3.Callback(){
+
+            @Override
+            public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                final String result = response.body().string();
+
+                MainActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            downloadComplete(Util.retrieveRepositoriesFromResponse(result));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
+        });
     }
 }
