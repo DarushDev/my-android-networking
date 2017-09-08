@@ -6,3 +6,8 @@ Create a simple app which connects to the GitHub API to retrieve and display a l
 ![Image](../master/app/src/main/res/drawable/screenshot2.png)
 
 ![Image](../master/app/src/main/res/drawable/screenshot3.png)
+
+### Libraries used:
+- [OkHttp](https://github.com/square/okhttp)
+- [Volley](https://github.com/google/volley)
+- [Retrofit](https://github.com/square/retrofit)
